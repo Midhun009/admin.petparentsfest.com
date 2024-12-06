@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportMixin
-from .models import Banner, Contact, PetCategory, PetWeightClass, PetRegistration, Package, BrandRegistration, Tickets
+from .models import Banner, Contact, PetCategory, PetWeightClass, PetRegistration, Package, BrandRegistration, Tickets,Referral
 
 
 @admin.register(Banner)
@@ -31,8 +31,8 @@ class PetWeightClassAdmin(ImportExportMixin, admin.ModelAdmin):
 @admin.register(PetRegistration)
 class PetRegistrationAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('owner_name', 'pet_name', 'pet_category', 'weight_class', 'created')
-    search_fields = ('owner_name', 'pet_name', 'emirates_id')
-    list_filter = ('pet_category', 'weight_class', 'created')
+    search_fields = ('owner_name', 'pet_name', 'emirates_id','owner_phone')
+    list_filter = ('pet_category', 'weight_class', 'created','snap_my_pet','pet_talent_show')
     ordering = ('-created',)
 
 
@@ -57,5 +57,11 @@ class BrandRegistrationAdmin(ImportExportMixin, admin.ModelAdmin):
 @admin.register(Tickets)
 class TicketsAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'email', 'mobile', 'nationality', 'how_many_members')
+    search_fields = ('name', 'email', 'mobile', 'nationality')
+    list_filter = ('nationality',)
+
+@admin.register(Referral)
+class ReferralAdmin(ImportExportMixin, admin.ModelAdmin):
+    list_display = ('name', 'email', 'mobile', 'nationality', )
     search_fields = ('name', 'email', 'mobile', 'nationality')
     list_filter = ('nationality',)

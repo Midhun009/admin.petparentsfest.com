@@ -1,8 +1,9 @@
 from rest_framework import generics,status
-from core.models import Banner, Contact, PetCategory, PetRegistration, BrandRegistration, PetWeightClass, Tickets, Package
+from core.models import Banner, Contact, PetCategory, PetRegistration, BrandRegistration, PetWeightClass, Tickets, Package, Referral
 from core.serializers import BannerSerializer, ContactSerializer, PetCategorySerializer, PetRegistrationSerializer, \
-    BrandRegistrationSerializer, PetWeightClassSerializer, TicketsSerializer, PackageSerializer
+    BrandRegistrationSerializer, PetWeightClassSerializer, TicketsSerializer, PackageSerializer, ReferralSerializer
 
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -32,12 +33,15 @@ class PetRegistrationCreateView(generics.CreateAPIView):
             },
             status=status.HTTP_201_CREATED
         )
+    
+
+
 
 class PetCategoryListView(generics.ListAPIView):
     queryset = PetCategory.objects.all()
     serializer_class = PetCategorySerializer
 
-@api_view(['GET'])
+@api_view(['GET']) # type: ignore
 def get_weight_classes_by_category(request, category_id):
     try:
         category = PetCategory.objects.get(id=category_id)
@@ -62,3 +66,40 @@ class TicketsCreateView(generics.CreateAPIView):
 class PackageCreateView(generics.ListAPIView):
     queryset = Package.objects.all()
     serializer_class = PackageSerializer
+
+class ReferralCreateView(generics.CreateAPIView):
+    queryset = Referral.objects.all()
+    serializer_class = ReferralSerializer 
+
+class ReferralTicketsCreateView(generics.CreateAPIView):
+    queryset = Tickets.objects.all()
+    serializer_class = TicketsSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Extract the referral slug from the URL
+        referral_slug = kwargs.get('slug')
+
+        # Check if the referral_slug exists
+        try:
+            referral = Referral.objects.get(slug=referral_slug)
+        except Referral.DoesNotExist:
+            return Response({"error": "Referral with this slug does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create a mutable copy of request.data
+        data = request.data.copy()
+        data['referral'] = referral.id  # Pass the PK of the referral instead of the slug
+
+        # Pass the updated data to the serializer
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        ticket = serializer.save()
+
+        # Prepare and return the response
+        return Response(
+            {
+                "success": True,
+                "ticket_id": ticket.id,
+                "message": "Ticket created successfully!",
+            },
+            status=status.HTTP_201_CREATED,
+        )

@@ -1,4 +1,5 @@
 from os import rename
+from django.utils.text import slugify 
 
 from ckeditor.fields import RichTextField
 from django.db import models
@@ -6,6 +7,29 @@ from django.shortcuts import render
 
 
 # Create your models here.
+
+class Referral(models.Model):
+
+    CHOICES = [
+        ('Yes', 'Yes'),
+        ('No', 'No')
+    ]
+
+    name = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+    mobile = models.CharField(max_length=255)
+    nationality = models.CharField(max_length=255)
+    have_pets = models.CharField(max_length=255, choices=CHOICES)
+    slug = models.SlugField(unique=True, blank=True)  
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)  
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name}'s referral"
+    
 
 class Banner(models.Model):
     order_no = models.CharField(max_length=25)
@@ -50,7 +74,7 @@ class PetRegistration(models.Model):
     ]
 
 
-
+    referrals = models.ForeignKey(Referral, on_delete=models.SET_NULL, blank=True, null=True)
     owner_name = models.CharField(max_length=250)
     owner_email = models.CharField(max_length=99)
     owner_phone = models.CharField(max_length=99)
@@ -73,19 +97,31 @@ class PetRegistration(models.Model):
     comfortable_in_crowds = models.CharField(max_length=250, choices=CHOICES)
     socialized_with_pets_people = models.CharField(max_length=250, choices=CHOICES)
     passport_vaccine = models.FileField(upload_to='passport_vaccines/', blank=True, null=True)
-    pet_trick_competition = models.BooleanField(default=False)
-    pet_photo_competition = models.BooleanField(default=False)
+    pet_talent_show = models.BooleanField(default=False)
+    snap_my_pet = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.owner_name
+    def get_slug(self):
+        # Generate a slug using the pet's category and name
+        return slugify(f"{self.pet_category.name}-{self.pet_name}-{self.id}")
+    
 
 class Tickets(models.Model):
+
+
+    CHOICES = [
+        ('Yes', 'Yes'),
+        ('No', 'No')
+    ]
+    referral = models.ForeignKey(Referral, on_delete=models.CASCADE, related_name="tickets", null=True, blank=True)
     name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     mobile = models.CharField(max_length=255)
     nationality = models.CharField(max_length=255)
     how_many_members = models.CharField(max_length=255)
+    have_pets = models.CharField(max_length=255,choices=CHOICES)
 
     def __str__(self):
         return self.name
@@ -122,3 +158,5 @@ class BrandRegistration(models.Model):
 
     def __str__(self):
         return self.company_name
+    
+

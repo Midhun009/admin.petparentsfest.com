@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Banner, Contact, PetCategory, PetRegistration, BrandRegistration, PetWeightClass, Tickets, Package
+from .models import Banner, Contact, PetCategory, PetRegistration, BrandRegistration, PetWeightClass, Tickets, Referral, Package
 
 
 class BannerSerializer(serializers.ModelSerializer):
@@ -19,9 +19,12 @@ class PetRegistrationSerializer(serializers.ModelSerializer):
             'owner_name', 'owner_email', 'owner_phone', 'owner_address', 'emirates_id',
             'pet_category', 'pet_name', 'breed', 'age', 'gender',
             'microchip_number', 'special_needs', 'pet_photo', 'weight_class', 'weight',
-            'spayed_neutered', 'attended_similar_events', 'comfortable_in_crowds',
-            'socialized_with_pets_people' ,'passport_vaccine','pet_trick_competition','pet_photo_competition','instagram'
+            'spayed_neutered', 'attended_similar_events', 'comfortable_in_crowds','instagram',
+            'socialized_with_pets_people' ,'passport_vaccine','pet_talent_show','snap_my_pet',
         ]
+    def create(self, validated_data):
+        
+        return PetRegistration.objects.create(**validated_data)
 
 class BrandRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,7 +34,9 @@ class BrandRegistrationSerializer(serializers.ModelSerializer):
 class TicketsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tickets
-        fields = ('name', 'email', 'mobile', 'nationality', 'how_many_members')
+        fields = ('name', 'email', 'mobile', 'nationality', 'how_many_members', 'have_pets', 'referral')
+
+        
 
 class PackageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,3 +52,9 @@ class PetWeightClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetWeightClass
         fields = ['id', 'category', 'name'] 
+
+
+class ReferralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Referral
+        fields = '__all__'
